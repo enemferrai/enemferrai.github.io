@@ -1,0 +1,29 @@
+MEU ENEM — como colocar no ar (feito uma vez só)
+
+O app é só uma pasta de arquivos. Não tem banco de dados nem instalação no servidor.
+Os dados da Yasmin ficam guardados no próprio tablet dela.
+
+OPÇÃO 1 — Hostinger (o mesmo lugar do abitus.com.br)
+1. Entre no hPanel > Arquivos > Gerenciador de Arquivos.
+2. Dentro de public_html, crie uma pasta chamada:  enem
+3. Envie para dentro dela TODOS os arquivos desta pasta (index.html, sw.js,
+   manifest.webmanifest e a pasta icons).
+4. O link fica:  https://abitus.com.br/enem/
+   (precisa ser https — o Hostinger já tem SSL ativo no domínio)
+
+OPÇÃO 2 — qualquer hospedagem com https (InfinityFree, GitHub Pages, Netlify)
+Mesma coisa: envie a pasta inteira e abra o link.
+
+NO TABLET DA YASMIN
+1. Abra o link no Google Chrome.
+2. Toque em "Instalar" (aparece no próprio app) ou nos três pontinhos > "Instalar app".
+3. Pronto: aparece o ícone "Meu ENEM" na tela inicial e funciona sem internet.
+
+ATUALIZAÇÕES
+Quando houver uma versão nova, é só substituir os arquivos na mesma pasta.
+O app avisa a Yasmin com um botão "Atualizar". Os dados dela não são apagados.
+
+BACKUP
+Em "Ajustes e backup" ela toca em "Fazer backup agora" e pode mandar o arquivo
+para você pelo WhatsApp. Para restaurar em outro aparelho: "Restaurar backup".
+Importante: não limpe os dados do Chrome no tablet sem ter um backup.
