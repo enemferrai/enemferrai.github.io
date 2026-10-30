@@ -235,6 +235,24 @@ details > summary::-webkit-details-marker{display:none}
 .kpi-inline div{display:flex;flex-direction:column}
 .kpi-inline b{font-family:var(--f-display);font-size:1.3rem;font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.hello{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:8px 4px}
+.fish{width:150px;height:auto;overflow:visible}
+.fish-body{animation:swim 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.bub{animation:bub 2.4s ease-in infinite;opacity:0}
+.b2{animation-delay:.8s}
+@keyframes swim{0%,100%{transform:translate(0,0) rotate(-2deg)}50%{transform:translate(-8px,-5px) rotate(2deg)}}
+@keyframes bub{0%{opacity:0;transform:translate(0,10px)}30%{opacity:1}100%{opacity:0;transform:translate(-6px,-24px)}}
+.hello-msg{font-family:var(--f-display);font-size:1.35rem;font-weight:700;line-height:1.3;text-wrap:balance;max-width:28ch}
+@media (max-width:600px){#taskForm{grid-template-columns:1fr 1fr!important}#taskForm label:first-child{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){.fish-body,.bub{animation:none!important;opacity:1}}
+.lock{max-width:360px;margin:6vh auto 0;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.lock .brand{margin-bottom:6px}
+.pin-dots{display:flex;gap:16px}
+.pin-dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--accent);display:block}
+.pin-dots i.on{background:var(--accent)}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px}
+.keypad button{width:72px;height:72px;border-radius:50%;border:1px solid var(--line);background:var(--surface);font-size:1.5rem;font-weight:650;cursor:pointer;color:var(--ink);font-variant-numeric:tabular-nums}
+.keypad button:active{background:var(--accent-soft)}
 </style></head><body><div id="root"></div><noscript>Ative o JavaScript para usar o Meu ENEM.</noscript><script>window.__PWA__=true;</script><script>/* Conteúdo-base do ENEM. "*" no início = assunto que cai muito. */
 const AREAS = {
   lc:{name:'Linguagens', color:'var(--lc)'},
@@ -276,6 +294,18 @@ const EXAM_AREAS = [
 const ENEM_OPTIONS = [
   {v:'2026-11-08', label:'ENEM 2026', note:'Provas em 8 e 15 de novembro de 2026'},
   {v:'2027-11-07', label:'ENEM 2027', note:'Data ainda não divulgada. Uso 7/11/2027 como estimativa e você ajusta depois.'}
+];
+/* Cursos de graduação: duração típica em anos e área do ENEM que costuma pesar mais (confirmar no edital de cada universidade) */
+const DREAM_COURSES = [
+  ['Medicina',6,'cn'],['Odontologia',5,'cn'],['Enfermagem',5,'cn'],['Farmácia',5,'cn'],['Fisioterapia',5,'cn'],['Nutrição',4,'cn'],
+  ['Medicina Veterinária',5,'cn'],['Biomedicina',4,'cn'],['Ciências Biológicas',4,'cn'],['Educação Física',4,'cn'],['Agronomia',5,'cn'],
+  ['Psicologia',5,'ch'],['Direito',5,'ch'],['Pedagogia',4,'ch'],['Serviço Social',4,'ch'],['Relações Internacionais',4,'ch'],['História',4,'ch'],['Geografia',4,'ch'],
+  ['Jornalismo',4,'lc'],['Publicidade e Propaganda',4,'lc'],['Letras',4,'lc'],['Design',4,'lc'],['Cinema e Audiovisual',4,'lc'],
+  ['Arquitetura e Urbanismo',5,'mt'],['Engenharia Civil',5,'mt'],['Engenharia Elétrica',5,'mt'],['Engenharia de Computação',5,'mt'],['Engenharia Química',5,'mt'],
+  ['Ciência da Computação',4,'mt'],['Sistemas de Informação',4,'mt'],['Administração',4,'mt'],['Ciências Contábeis',4,'mt'],['Economia',4,'mt'],['Matemática',4,'mt'],['Física',4,'mt'],['Química',4,'cn']
+].map(([n,y,a]) => ({n,y,a}));
+const STUDY_KINDS = [
+  {v:'aula', label:'Aula do cursinho'}, {v:'exercicios', label:'Exercícios'}, {v:'revisao', label:'Revisão'}, {v:'leitura', label:'Resumo ou leitura'}
 ];
 
 'use strict';
@@ -325,7 +355,10 @@ const I = {
   upload:'<path d="M12 21V9M7 14l5-5 5 5M4 3h16"/>',
   edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
   star:'<path d="M12 2l2.9 6.9L22 10l-5.5 4.7L18.2 22 12 18.3 5.8 22l1.7-7.3L2 10l7.1-1.1z"/>',
-  x2:'<path d="M18 6L6 18M6 6l12 12"/>'
+  x2:'<path d="M18 6L6 18M6 6l12 12"/>',
+  video:'<rect x="2" y="5" width="14" height="14" rx="2"/><path d="M16 10l6-4v12l-6-4z"/>',
+  cap:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v5c3 2 9 2 12 0v-5M22 9v6"/>',
+  ext:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'
 };
 const ico = (n, extra = '') => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${I[n]}</svg>`;
 const LOGO = `<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="116" fill="#35284F"/><path d="M103 218 Q173 183 256 235 Q339 183 409 218 L409 338 Q325 310 256 361 Q187 310 103 338 Z" fill="none" stroke="#E9D7EE" stroke-width="16" stroke-linejoin="round"/><path d="M256 235 L256 361" stroke="#E9D7EE" stroke-width="12"/><path d="M256 177 L266 202 L291 212 L266 222 L256 247 L246 222 L221 212 L246 202 Z" fill="#F5D6A7"/><path d="M134 251 Q192 236 229 263 M134 284 Q192 269 229 296 M283 263 Q321 236 378 251 M283 296 Q321 269 378 284" fill="none" stroke="#BBA4CF" stroke-width="7" stroke-linecap="round"/></svg>`;
@@ -344,7 +377,9 @@ function freshState() {
     v: 1,
     profile: { name: 'Yasmin', enemDate: '2026-11-08', lang: 'Inglês', letterSeen: false, onboarded: false,
       dayMin: [60, 120, 120, 120, 120, 120, 90], reviewDays: [1, 7, 15, 30, 60, 90], theme: 'auto', lastBackup: null, created: today() },
-    subjects, topics, sessions: [], qlogs: [], exams: [], essays: [], errors: [],
+    subjects, topics, sessions: [], qlogs: [], exams: [], essays: [], errors: [], tasks: [],
+    dream: { course: '', uni: '', city: '', years: null, cut: null, why: '', w: { lc: 1, ch: 1, cn: 1, mt: 1, rd: 1 }, useW: false, score: { lc: null, ch: null, cn: null, mt: null, rd: null } },
+    course: { name: 'Professor Ferretto', plan: '', url: '', start: '', end: '', hours: null },
     timer: { subjectId: null, topicId: null, mode: 'p50', phase: 'foco', running: false, segStart: null, phaseMs: 0, focusMs: 0 }
   };
 }
@@ -360,7 +395,9 @@ function load() {
 function migrate(s) {
   const base = freshState();
   s.profile = Object.assign(base.profile, s.profile || {});
-  for (const k of ['subjects','topics','sessions','qlogs','exams','essays','errors']) if (!Array.isArray(s[k])) s[k] = base[k];
+  for (const k of ['subjects','topics','sessions','qlogs','exams','essays','errors','tasks']) if (!Array.isArray(s[k])) s[k] = base[k];
+  s.dream = Object.assign(base.dream, s.dream || {}); s.dream.w = Object.assign({ lc: 1, ch: 1, cn: 1, mt: 1, rd: 1 }, s.dream.w || {}); s.dream.score = Object.assign({ lc: null, ch: null, cn: null, mt: null, rd: null }, s.dream.score || {});
+  s.course = Object.assign(base.course, s.course || {});
   s.timer = Object.assign(base.timer, s.timer || {});
   return s;
 }
@@ -394,7 +431,8 @@ const weekTotalAvail = () => sum(S.profile.dayMin);
 /* Lógica da aba PRINCIPAL: peso = questões ÷ nível; sugestão = peso relativo × horas da semana */
 function suggestedGoals() {
   const total = weekTotalAvail();
-  const ws = S.subjects.map(s => ({ id: s.id, w: s.q / s.level }));
+  const D = S.dream, aw = a => D.useW ? (D.w[a] || 1) : 1;
+  const ws = S.subjects.map(s => ({ id: s.id, w: s.q / s.level * aw(s.area) }));
   const W = sum(ws.map(x => x.w)) || 1;
   const out = {};
   ws.forEach(x => { out[x.id] = Math.round(x.w / W * total / 15) * 15; });
@@ -567,7 +605,9 @@ const NAV = [
   { r: 'estudar', label: 'Estudar', icon: 'timer', tab: true },
   { r: 'conteudos', label: 'Conteúdos', icon: 'book', tab: true },
   { r: 'evolucao', label: 'Evolução', icon: 'chart', tab: true },
+  { r: 'sonho', label: 'Meu sonho', icon: 'cap' },
   { r: 'plano', label: 'Minha semana', icon: 'plan' },
+  { r: 'cursinho', label: 'Meu cursinho', icon: 'video' },
   { r: 'revisoes', label: 'Revisões', icon: 'repeat' },
   { r: 'desempenho', label: 'Questões e simulados', icon: 'target' },
   { r: 'redacao', label: 'Redação', icon: 'pen' },
@@ -582,7 +622,7 @@ function shell(content) {
   const due = dueReviews().length;
   const moreActive = !NAV.find(n => n.r === route)?.tab && route !== 'onboarding';
   const side = `<nav class="side" aria-label="Menu"><div class="brand">${LOGO}<span>Meu ENEM</span></div>
-    ${NAV.map((n, i) => `${i === 4 || i === 9 || i === 10 ? '<div class="sep"></div>' : ''}<button class="nav" data-go="${n.r}" ${route === n.r ? 'aria-current="page"' : ''}>${ico(n.icon)}<span>${n.label}</span>${n.r === 'revisoes' && due ? `<span class="count">${due}</span>` : ''}</button>`).join('')}</nav>`;
+    ${NAV.map((n, i) => `${i === 4 || i === 11 || i === 12 ? '<div class="sep"></div>' : ''}<button class="nav" data-go="${n.r}" ${route === n.r ? 'aria-current="page"' : ''}>${ico(n.icon)}<span>${n.label}</span>${n.r === 'revisoes' && due ? `<span class="count">${due}</span>` : ''}</button>`).join('')}</nav>`;
   const tabs = `<nav class="tabbar" aria-label="Navegação">${NAV.filter(n => n.tab).map(n => `<button class="tab" data-go="${n.r}" ${route === n.r ? 'aria-current="page"' : ''}><span class="ico-bg">${ico(n.icon)}</span>${n.label}</button>`).join('')}
     <button class="tab" data-go="mais" ${moreActive ? 'aria-current="page"' : ''}><span class="ico-bg">${ico('menu')}</span>Mais${due ? `<span class="badge">${due}</span>` : ''}</button></nav>`;
   const demo = DEMO ? `<div class="banner"><span class="grow"><b>Modo demonstração.</b> Dados de exemplo, separados dos reais.</span><button class="btn sm" data-act="exit-demo">Sair da demonstração</button></div>` : '';
@@ -591,9 +631,10 @@ function shell(content) {
 }
 function render() {
   readRoute();
+  if (isLocked()) { const v = vLock(); document.getElementById('root').innerHTML = `<main class="main"><div class="wrap">${v.html}</div></main>`; v.mount(document.getElementById('root')); document.title = 'Meu ENEM'; return; }
   if (!S.profile.letterSeen && route !== 'carta') route = 'carta';
   else if (S.profile.letterSeen && !S.profile.onboarded && route !== 'carta') route = 'onboarding';
-  const views = { hoje: vHoje, estudar: vEstudar, conteudos: vConteudos, evolucao: vEvolucao, plano: vPlano, revisoes: vRevisoes, desempenho: vDesempenho, redacao: vRedacao, historico: vHistorico, ajustes: vAjustes, carta: vCarta, mais: vMais, onboarding: vOnboarding };
+  const views = { sonho: vSonho, cursinho: vCursinho, hoje: vHoje, estudar: vEstudar, conteudos: vConteudos, evolucao: vEvolucao, plano: vPlano, revisoes: vRevisoes, desempenho: vDesempenho, redacao: vRedacao, historico: vHistorico, ajustes: vAjustes, carta: vCarta, mais: vMais, onboarding: vOnboarding };
   const v = views[route]();
   const bare = route === 'onboarding' || (route === 'carta' && !S.profile.onboarded);
   document.getElementById('root').innerHTML = bare ? `<main class="main" style="padding-bottom:40px"><div class="wrap">${v.html}</div></main>` : shell(v.html);
@@ -638,18 +679,22 @@ function vCarta() {
 let onbStep = 0;
 function vOnboarding() {
   const P = S.profile;
-  const steps = `<div class="steps">${[0, 1, 2].map(i => `<i class="${i <= onbStep ? 'on' : ''}"></i>`).join('')}</div>`;
+  const steps = `<div class="steps">${[0, 1, 2, 3].map(i => `<i class="${i <= onbStep ? 'on' : ''}"></i>`).join('')}</div>`;
   let body = '';
-  if (onbStep === 0) body = `<div class="stack"><div class="eyebrow">Passo 1 de 3</div><h1>Vamos preparar seu app</h1><p class="muted">Leva 1 minuto. Dá para mudar tudo depois em Ajustes.</p></div>
+  if (onbStep === 0) body = `<div class="stack"><div class="eyebrow">Passo 1 de 4</div><h1>Vamos preparar seu app</h1><p class="muted">Leva 1 minuto. Dá para mudar tudo depois em Ajustes.</p></div>
     <label class="field">Como você quer ser chamada?<input class="input" id="oName" value="${esc(P.name)}" maxlength="30"></label>
     <div class="stack tight"><b>Qual ENEM você vai fazer?</b>${chips('enem', ENEM_OPTIONS.map(o => ({ v: o.v, label: o.label })), P.enemDate)}<p class="small muted" id="enemNote">${esc(ENEM_OPTIONS.find(o => o.v === P.enemDate)?.note || '')}</p></div>
     <div class="stack tight"><b>Língua estrangeira</b>${chips('lang', [{ v: 'Inglês', label: 'Inglês' }, { v: 'Espanhol', label: 'Espanhol' }], P.lang)}</div>`;
-  if (onbStep === 1) body = `<div class="stack"><div class="eyebrow">Passo 2 de 3</div><h1>Quanto tempo você tem para estudar?</h1><p class="muted">Conte só o tempo de estudo em casa, fora da escola. Com isso o app monta seu plano de cada dia.</p></div>
+  if (onbStep === 1) body = `<div class="stack"><div class="eyebrow">Passo 2 de 4</div><h1>Qual é o seu sonho?</h1><p class="muted">O curso da faculdade que você quer fazer. Ele vai aparecer para te lembrar por que você está estudando.</p></div>
+    <label class="field">Curso dos sonhos<input class="input" id="oCourse" list="dreamList" value="${esc(S.dream.course)}" placeholder="Ex.: Psicologia" maxlength="60"></label>${dreamDatalist()}
+    <label class="field">Universidade (se já souber)<input class="input" id="oUni" value="${esc(S.dream.uni)}" placeholder="Ex.: UFMT" maxlength="60"></label>
+    <label class="field">Cursinho on-line que você usa<input class="input" id="oCur" value="${esc(S.course.name)}" placeholder="Ex.: Professor Ferretto" maxlength="40"></label>`;
+  if (onbStep === 2) body = `<div class="stack"><div class="eyebrow">Passo 3 de 4</div><h1>Quanto tempo você tem para estudar?</h1><p class="muted">Conte só o tempo de estudo em casa, fora da escola. Com isso o app monta seu plano de cada dia.</p></div>
     <div class="card">${[1, 2, 3, 4, 5, 6, 0].map(d => `<div class="row between" style="padding:4px 0"><b style="min-width:80px">${WEEKDAYS[d]}</b><div class="stepper"><button type="button" data-day="${d}" data-d="-15" aria-label="Menos">−</button><span id="dm${d}">${P.dayMin[d] ? fmtMin(P.dayMin[d]) : 'Folga'}</span><button type="button" data-day="${d}" data-d="15" aria-label="Mais">+</button></div></div>`).join('')}
     <div class="divider"></div><div class="row between"><span class="muted">Total na semana</span><b id="dmTot" class="num">${fmtMin(weekTotalAvail())}</b></div></div>`;
-  if (onbStep === 2) body = `<div class="stack"><div class="eyebrow">Passo 3 de 3</div><h1>Como você se sente em cada matéria?</h1><p class="muted">Seja sincera. Matérias mais difíceis e que valem mais questões ganham mais tempo no plano.</p></div>
+  if (onbStep === 3) body = `<div class="stack"><div class="eyebrow">Passo 4 de 4</div><h1>Como você se sente em cada matéria?</h1><p class="muted">Seja sincera. Matérias mais difíceis e que valem mais questões ganham mais tempo no plano.</p></div>
     <div class="card" style="gap:0">${sortedSubjects().map(s => `<div class="level-row"><div class="row"><span class="dot" style="--c:${AREAS[s.area].color}"></span><b>${esc(s.name)}</b></div>${chips('lv-' + s.id, LEVELS.map(l => ({ v: l.v, label: l.short })), s.level)}</div>`).join('')}</div>`;
-  const nav = `<div class="row between">${onbStep > 0 ? '<button class="btn" id="oBack">Voltar</button>' : '<span></span>'}<button class="btn primary big" id="oNext">${onbStep < 2 ? 'Continuar' : 'Montar meu plano'}</button></div>`;
+  const nav = `<div class="row between">${onbStep > 0 ? '<button class="btn" id="oBack">Voltar</button>' : '<span></span>'}<button class="btn primary big" id="oNext">${onbStep < 3 ? 'Continuar' : 'Montar meu plano'}</button></div>`;
   return { html: `<div class="onb">${steps}${body}${nav}</div>`, mount: r => {
     bindChips(r, (n, v) => {
       if (n === 'enem') { P.enemDate = v; r.querySelector('#enemNote').textContent = ENEM_OPTIONS.find(o => o.v === v)?.note || ''; }
@@ -664,7 +709,8 @@ function vOnboarding() {
     r.querySelector('#oBack') && (r.querySelector('#oBack').onclick = () => { onbStep--; render(); });
     r.querySelector('#oNext').onclick = () => {
       if (onbStep === 0) { P.name = r.querySelector('#oName').value.trim() || 'Yasmin'; applyLang(); }
-      if (onbStep < 2) { onbStep++; save(); render(); return; }
+      if (onbStep === 1) { setDreamCourse(r.querySelector('#oCourse').value); S.dream.uni = r.querySelector('#oUni').value.trim(); S.course.name = r.querySelector('#oCur').value.trim(); }
+      if (onbStep < 3) { onbStep++; save(); render(); return; }
       P.onboarded = true; save(true); go('hoje'); toast('Plano pronto! Bons estudos.');
     };
   } };
@@ -699,12 +745,12 @@ function vHoje() {
   return { html: `
     <section class="hero">
       <svg class="star" viewBox="0 0 24 24" fill="currentColor">${I.star}</svg>
-      <div class="stack tight"><div class="small sub">${esc(fmtDateLong(t))}</div><h1>${hello}, ${esc(P.name)}!</h1><p class="sub">${heroLine(st, todayMin)}</p></div>
+      <div class="stack tight"><div class="small sub">${esc(fmtDateLong(t))}</div><h1>${hello}, ${esc(P.name)}!</h1><p class="sub">${heroLine(st, todayMin)}</p>${S.dream.course ? `<button class="pill" data-go="sonho" style="align-self:flex-start;border:0;cursor:pointer;background:rgba(255,255,255,.18);color:inherit;margin-top:4px">${ico('cap', 'style="width:14px;height:14px"')} Rumo a ${esc(S.dream.course)}${S.dream.uni ? ' · ' + esc(S.dream.uni) : ''}</button>` : ''}</div>
       ${countdown}
     </section>
     ${timerRunning ? `<div class="banner"><span class="grow"><b>Cronômetro em andamento.</b> ${esc(subjName(S.timer.subjectId))}</span><button class="btn sm primary" data-go="estudar">Abrir</button></div>` : ''}
     ${reta}
-    ${installBanner()}${backupNudge()}
+    ${installBanner()}${backupNudge()}${cursinhoToday()}
     <div class="stats">
       <div class="stat"><span class="eyebrow">Hoje</span><b>${fmtMin(todayMin)}</b><span class="small muted">de ${fmtMin(plan.avail)} planejados</span></div>
       <div class="stat"><span class="eyebrow">Semana</span><b>${fmtMin(weekMin)}</b><div class="bar thin"><i style="width:${clamp(pct(weekMin, weekGoal) || 0, 0, 100)}%"></i></div><span class="small muted">meta ${fmtMin(weekGoal)}</span></div>
@@ -718,7 +764,7 @@ function vHoje() {
         ${due.length ? `<div class="list">${due.slice(0, 4).map(tp => `<div class="li"><span class="dot" style="--c:${subjColor(tp.subjectId)}"></span><div class="grow"><div class="t">${esc(tp.title)}</div><div class="small muted">${esc(subjName(tp.subjectId))}${tp.next < t ? ` · atrasada ${diffDays(tp.next, t)}d` : ''}</div></div></div>`).join('')}</div><button class="btn soft block" data-act="go-reviews">Fazer revisões</button>`
         : `<p class="muted">Quando você marca um conteúdo como estudado, o app agenda revisões para 1, 7, 15, 30, 60 e 90 dias depois. Elas aparecem aqui no dia certo.</p>${nextReviewLine()}`}
       </section>
-    </div>` };
+    </div>`, mount: r => bindTasks(r) };
 }
 function heroLine(st, todayMin) {
   if (todayMin >= 120) return 'Que dia produtivo! Lembre de descansar também.';
@@ -770,12 +816,14 @@ function vEstudar() {
         <div class="stack tight"><b class="small">Modo</b>${chips('mode', Object.entries(MODES).map(([v, m]) => ({ v, label: m.label })), T.mode)}</div>
         <p class="small muted">No modo Pomodoro o app avisa com som e vibração na hora da pausa. A tela fica acesa enquanto o cronômetro roda. Se o app fechar, o tempo continua contando.</p>
         <div class="divider"></div>
+        ${S.course.url ? `<a class="btn soft block" id="openClass" href="${esc(safeUrl(S.course.url))}" target="_blank" rel="noopener">${ico('ext')}Abrir aula no ${esc(S.course.name || 'cursinho')}</a><p class="small muted">Se o cronômetro estiver parado, ele começa sozinho quando você abre a aula.</p>` : ''}
         <button class="btn block" data-act="log-manual">${ico('plus')}Esqueci de ligar o cronômetro</button>
       </section>
     </div>`, mount: r => {
       bindChips(r, (n, v) => { if (n === 'mode') { if (!idle && T.mode !== v) { toast('Para trocar o modo, termine ou zere o cronômetro.'); render(); return; } T.mode = v; save(); render(); } });
       r.querySelector('#tSubj').onchange = e => { T.subjectId = e.target.value; T.topicId = null; save(); render(); };
       r.querySelector('#tTopic').onchange = e => { T.topicId = e.target.value || null; save(); };
+      r.querySelector('#openClass') && (r.querySelector('#openClass').onclick = () => { if (!T.running && T.phase === 'foco') { T.running = true; T.segStart = Date.now(); save(true); setWake(true); drawTimer(true); } });
       drawTimer(true);
     } };
 }
@@ -845,7 +893,7 @@ function fmtClock(ms) { const s = Math.floor(ms / 1000), h = Math.floor(s / 3600
 function resetTimer() { Object.assign(S.timer, { running: false, segStart: null, phaseMs: 0, focusMs: 0, phase: 'foco' }); save(true); setWake(false); }
 
 /* Registro de sessão (fim do cronômetro ou manual) */
-function openLogSheet({ subjectId, topicId, min, fromTimer, date }) {
+function openLogSheet({ subjectId, topicId, min, fromTimer, date, kind }) {
   subjectId = subjectId || sortedSubjects()[0].id;
   const html = `<div class="row between"><h2>${fromTimer ? 'Como foi o estudo?' : 'Registrar estudo'}</h2><button class="icon-btn" data-close aria-label="Fechar">${ico('x')}</button></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
@@ -853,6 +901,7 @@ function openLogSheet({ subjectId, topicId, min, fromTimer, date }) {
       <label class="field">Minutos<input class="input num" type="number" inputmode="numeric" id="lMin" min="1" max="600" value="${min || 50}"></label></div>
     <label class="field">Matéria<select class="input" id="lSubj">${subjOptions(subjectId)}</select></label>
     <label class="field">Conteúdo<select class="input" id="lTopic">${topicOptions(subjectId, topicId)}</select></label>
+    <div class="stack tight"><b class="small">Tipo de estudo</b>${chips('kind', STUDY_KINDS, kind || (S.course.name ? 'aula' : 'exercicios'))}</div>
     <label class="row" style="gap:10px;font-weight:600"><input type="checkbox" id="lSeen" style="width:22px;height:22px"> Terminei este conteúdo (agendar revisões)</label>
     <div class="card flat" style="gap:8px"><b class="small">Fez questões? (opcional)</b>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><label class="field">Questões<input class="input num" type="number" inputmode="numeric" id="lQ" min="0" placeholder="0"></label><label class="field">Acertos<input class="input num" type="number" inputmode="numeric" id="lOk" min="0" placeholder="0"></label></div></div>
@@ -860,6 +909,7 @@ function openLogSheet({ subjectId, topicId, min, fromTimer, date }) {
     <p class="small" id="lErr" style="color:var(--bad)" hidden></p>
     <div class="row" style="justify-content:flex-end">${fromTimer ? '<button class="btn" data-close>Voltar ao cronômetro</button>' : '<button class="btn" data-close>Cancelar</button>'}<button class="btn primary" id="lSave">Salvar</button></div>`;
   sheet(html, sh => {
+    bindChips(sh);
     const seenBox = sh.querySelector('#lSeen');
     const syncSeen = () => { const tp = topic(sh.querySelector('#lTopic').value); seenBox.disabled = !tp; seenBox.checked = !!tp && tp.seen; seenBox.parentElement.style.opacity = tp ? 1 : .5; };
     sh.querySelector('#lSubj').onchange = e => { sh.querySelector('#lTopic').innerHTML = topicOptions(e.target.value); syncSeen(); };
@@ -872,7 +922,7 @@ function openLogSheet({ subjectId, topicId, min, fromTimer, date }) {
       if (!(m >= 1 && m <= 600)) return err('Informe os minutos estudados (entre 1 e 600).');
       if (d > today()) return err('A data não pode ser no futuro.');
       if (q < 0 || ok < 0 || ok > q) return err('Os acertos não podem passar do número de questões.');
-      S.sessions.push({ id: uid(), date: d, subjectId: sid, topicId: tid, min: m, note: sh.querySelector('#lNote').value.trim() });
+      S.sessions.push({ id: uid(), date: d, subjectId: sid, topicId: tid, min: m, kind: chipVal(sh, 'kind'), note: sh.querySelector('#lNote').value.trim() });
       if (q > 0) S.qlogs.push({ id: uid(), date: d, subjectId: sid, topicId: tid, total: q, ok });
       const tp = topic(tid); if (tp && seenBox.checked && !tp.seen) markSeen(tp, true, d);
       if (fromTimer) resetTimer();
@@ -1014,7 +1064,7 @@ function vDesempenho() {
       ${ex.length ? `${lineChart(EXAM_AREAS.map(a => ({ name: a.name, color: AREAS[a.k].color, values: ex.map(e => e[a.k] == null ? null : Math.round(e[a.k] / 45 * 100)) })), ex.map(e => fmtDate(e.date)))}
         <div class="legend">${EXAM_AREAS.map(a => `<span><i class="dot" style="--c:${AREAS[a.k].color}"></i>${a.name}</span>`).join('')}</div>
         <div class="stats">${EXAM_AREAS.map(a => { const v = last[a.k]; return `<div class="stat"><span class="eyebrow">${a.name}</span><b>${v == null ? '—' : v + '/45'}</b><span class="small muted">último simulado</span></div>`; }).join('')}</div>
-        <div class="list">${[...ex].reverse().map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.name || 'Simulado')}</div><div class="small muted num">${fmtDate(e.date)} · ${EXAM_AREAS.map(a => e[a.k] == null ? null : `${a.name.slice(0, 3)} ${e[a.k]}`).filter(Boolean).join(' · ')}</div></div><button class="icon-btn" data-delex="${e.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div>`
+        <div class="list">${[...ex].reverse().map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.name || 'Simulado')}</div><div class="small muted num">${fmtDate(e.date)}${e.src ? ' · ' + esc(e.src) : ''} · ${EXAM_AREAS.map(a => e[a.k] == null ? null : `${a.name.slice(0, 3)} ${e[a.k]}`).filter(Boolean).join(' · ')}</div></div><button class="icon-btn" data-delex="${e.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div>`
       : '<div class="empty"><b>Nenhum simulado ainda.</b><span>Faça provas antigas do ENEM no site do INEP e registre aqui.</span></div>'}</section>`;
   }
   if (tab === 'erros') {
@@ -1086,12 +1136,14 @@ function openErrSheet({ subjectId, topicId } = {}) {
 function openExamSheet() {
   sheet(`<div class="row between"><h2>Novo simulado</h2><button class="icon-btn" data-close aria-label="Fechar">${ico('x')}</button></div>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><label class="field">Nome<input class="input" id="xName" placeholder="Ex.: ENEM 2023 – 1º dia" maxlength="60"></label><label class="field">Data<input class="input" type="date" id="xDate" value="${today()}" max="${today()}"></label></div>
+    <div class="stack tight"><b class="small">Onde você fez</b>${chips('src', [...(S.course.name ? [{ v: S.course.name, label: S.course.name }] : []), { v: 'Prova antiga do INEP', label: 'Prova antiga do INEP' }, { v: 'Outro', label: 'Outro' }], S.course.name || 'Prova antiga do INEP')}</div>
     <p class="small muted">Preencha só as áreas que você fez. Acertos de 0 a 45.</p>
     <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">${EXAM_AREAS.map(a => `<label class="field"><span class="row"><i class="dot" style="--c:${AREAS[a.k].color}"></i>${a.name}</span><input class="input num" type="number" inputmode="numeric" min="0" max="45" id="x_${a.k}" placeholder="—"></label>`).join('')}</div>
     <p class="small" id="xErr" style="color:var(--bad)" hidden></p>
     <div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="xSave">Salvar</button></div>`, sh => {
+    bindChips(sh);
     sh.querySelector('#xSave').onclick = () => {
-      const e = { id: uid(), date: sh.querySelector('#xDate').value || today(), name: sh.querySelector('#xName').value.trim() };
+      const e = { id: uid(), date: sh.querySelector('#xDate').value || today(), name: sh.querySelector('#xName').value.trim(), src: chipVal(sh, 'src') };
       let any = false, bad = false;
       EXAM_AREAS.forEach(a => { const raw = sh.querySelector('#x_' + a.k).value; if (raw === '') { e[a.k] = null; return; } const v = +raw; if (!(v >= 0 && v <= 45)) bad = true; e[a.k] = v; any = true; });
       if (bad || !any) { const x = sh.querySelector('#xErr'); x.textContent = bad ? 'Os acertos de cada área vão de 0 a 45.' : 'Preencha os acertos de pelo menos uma área.'; x.hidden = false; return; }
@@ -1103,12 +1155,14 @@ function openExamSheet() {
 /* ============ Redação ============ */
 const COMPS = ['Norma culta', 'Tema e repertório', 'Argumentação', 'Coesão', 'Proposta de intervenção'];
 function vRedacao() {
-  const es = [...S.essays].sort((a, b) => a.date.localeCompare(b.date));
+  const pend = S.essays.filter(e => !e.c);
+  const es = S.essays.filter(e => e.c).sort((a, b) => a.date.localeCompare(b.date));
   const totals = es.map(e => sum(e.c));
   const avg = i => es.length ? Math.round(sum(es.slice(-3).map(e => e.c[i])) / Math.min(3, es.length)) : null;
   const weakest = es.length ? COMPS.map((n, i) => ({ n, i, v: avg(i) })).sort((a, b) => a.v - b.v)[0] : null;
   return { html: `
     <div class="row between"><div class="stack tight"><h1>Redação</h1><p class="muted">Cada redação vale até 1000 pontos, 200 por competência.</p></div><button class="btn primary" id="addEs">${ico('plus')}Nova redação</button></div>
+    ${pend.length ? `<section class="card" style="border-color:var(--gold)"><div class="row between"><h2>Aguardando correção</h2><span class="pill gold">${pend.length}</span></div><div class="list">${pend.map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.theme || 'Sem tema')}</div><div class="small muted">Enviada em ${fmtDate(e.date)}${e.src ? ' · ' + esc(e.src) : ''}${diffDays(e.date, today()) > 7 ? ` · há ${diffDays(e.date, today())} dias` : ''}</div></div><button class="btn sm primary" data-grade="${e.id}">Lançar notas</button><button class="icon-btn" data-deles="${e.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div></section>` : ''}
     ${es.length ? `<div class="stats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="stat"><span class="eyebrow">Última nota</span><b>${totals[totals.length - 1]}</b></div><div class="stat"><span class="eyebrow">Melhor nota</span><b>${Math.max(...totals)}</b></div><div class="stat"><span class="eyebrow">Redações</span><b>${es.length}</b></div></div>
       <section class="card"><h2>Evolução das notas</h2>${lineChart([{ name: 'Nota', color: 'var(--rd)', values: totals }], es.map(e => fmtDate(e.date)), { max: 1000, suffix: '' })}</section>
       <section class="card"><div class="row between"><h2>Média por competência</h2><span class="small muted">últimas ${Math.min(3, es.length)}</span></div>
@@ -1117,20 +1171,30 @@ function vRedacao() {
       <section class="card"><h2>Minhas redações</h2><div class="list">${[...es].reverse().map(e => `<div class="li"><div class="grow"><div class="t">${esc(e.theme || 'Sem tema')}</div><div class="small muted num">${fmtDate(e.date)} · ${e.c.join(' · ')}</div></div><span class="pill accent num">${sum(e.c)}</span><button class="icon-btn" data-deles="${e.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div></section>`
     : `<section class="card"><div class="empty"><b>Nenhuma redação registrada.</b><span>Escreva sobre um tema de provas anteriores, peça para um professor corrigir e anote as notas aqui.</span></div></section>`}`,
     mount: r => {
-      r.querySelector('#addEs').onclick = openEssaySheet;
+      r.querySelector('#addEs').onclick = () => openEssaySheet();
+      r.querySelectorAll('[data-grade]').forEach(b => b.onclick = () => openEssaySheet(b.dataset.grade));
       r.querySelectorAll('[data-deles]').forEach(b => b.onclick = () => confirmBox('Excluir redação?', 'As notas desta redação serão apagadas.', 'Excluir', () => { S.essays = S.essays.filter(x => x.id !== b.dataset.deles); save(); render(); }));
     } };
 }
-function openEssaySheet() {
+function openEssaySheet(editId) {
+  const ed = editId ? S.essays.find(e => e.id === editId) : null;
   const opts = [0, 40, 80, 120, 160, 200].map(v => ({ v, label: String(v) }));
-  sheet(`<div class="row between"><h2>Nova redação</h2><button class="icon-btn" data-close aria-label="Fechar">${ico('x')}</button></div>
-    <div class="grid" style="grid-template-columns:2fr 1fr;gap:10px"><label class="field">Tema<input class="input" id="esT" maxlength="140" placeholder="Ex.: Desafios para a valorização da herança africana"></label><label class="field">Data<input class="input" type="date" id="esD" value="${today()}" max="${today()}"></label></div>
-    <div class="comp-grid">${COMPS.map((n, i) => `<div class="comp"><b class="small">C${i + 1} · ${n}</b>${chips('c' + i, opts, 120)}</div>`).join('')}</div>
-    <div class="row between"><span class="muted">Total</span><b class="num" id="esTot" style="font-size:1.4rem">600</b></div>
+  const srcOpts = [...(S.course.name ? [{ v: S.course.name, label: S.course.name }] : []), { v: 'Professor da escola', label: 'Professor da escola' }, { v: 'Outro', label: 'Outro' }];
+  sheet(`<div class="row between"><h2>${ed ? 'Lançar notas' : 'Nova redação'}</h2><button class="icon-btn" data-close aria-label="Fechar">${ico('x')}</button></div>
+    <div class="grid" style="grid-template-columns:2fr 1fr;gap:10px"><label class="field">Tema<input class="input" id="esT" maxlength="140" value="${esc(ed?.theme || '')}" placeholder="Ex.: Desafios para a valorização da herança africana"></label><label class="field">Data<input class="input" type="date" id="esD" value="${ed?.date || today()}" max="${today()}"></label></div>
+    <div class="stack tight"><b class="small">Quem corrige</b>${chips('src', srcOpts, ed?.src || srcOpts[0].v)}</div>
+    ${ed ? '' : `<div class="stack tight"><b class="small">Situação</b>${chips('st', [{ v: 'nota', label: 'Já tenho a nota' }, { v: 'enviada', label: 'Enviei para correção' }], 'nota')}</div>`}
+    <div id="esComps" class="stack"><div class="comp-grid">${COMPS.map((n, i) => `<div class="comp"><b class="small">C${i + 1} · ${n}</b>${chips('c' + i, opts, 120)}</div>`).join('')}</div>
+    <div class="row between"><span class="muted">Total</span><b class="num" id="esTot" style="font-size:1.4rem">600</b></div></div>
     <div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="esSave">Salvar</button></div>`, sh => {
     const tot = () => sum(COMPS.map((_, i) => +chipVal(sh, 'c' + i)));
-    bindChips(sh, () => sh.querySelector('#esTot').textContent = tot());
-    sh.querySelector('#esSave').onclick = () => { S.essays.push({ id: uid(), date: sh.querySelector('#esD').value || today(), theme: sh.querySelector('#esT').value.trim(), c: COMPS.map((_, i) => +chipVal(sh, 'c' + i)) }); save(true); closeSheet(); toast(`Redação salva: ${tot()} pontos.`); render(); };
+    bindChips(sh, n => { sh.querySelector('#esTot').textContent = tot(); if (n === 'st') sh.querySelector('#esComps').hidden = chipVal(sh, 'st') === 'enviada'; });
+    sh.querySelector('#esSave').onclick = () => {
+      const sent = !ed && chipVal(sh, 'st') === 'enviada';
+      const data = { date: sh.querySelector('#esD').value || today(), theme: sh.querySelector('#esT').value.trim(), src: chipVal(sh, 'src'), c: sent ? null : COMPS.map((_, i) => +chipVal(sh, 'c' + i)) };
+      if (ed) Object.assign(ed, data); else S.essays.push({ id: uid(), ...data });
+      save(true); closeSheet(); toast(sent ? 'Redação guardada. Lance as notas quando a correção chegar.' : `Redação salva: ${tot()} pontos.`); render();
+    };
   });
 }
 
@@ -1206,7 +1270,7 @@ function vHistorico() {
   const keys = Object.keys(groups).slice(0, 60);
   return { html: `
     <div class="row between"><div class="stack tight"><h1>Histórico</h1><p class="muted">Todas as sessões de estudo registradas.</p></div><button class="btn primary" data-act="log-manual">${ico('plus')}Registrar</button></div>
-    ${keys.length ? keys.map(k => `<section class="card"><div class="row between"><h3>${esc(fmtDateLong(k))}</h3><span class="pill accent num">${fmtMin(sum(groups[k].map(x => x.min)))}</span></div><div class="list">${groups[k].map(x => `<div class="li"><span class="dot" style="--c:${subjColor(x.subjectId)}"></span><div class="grow"><div class="t">${esc(subjName(x.subjectId))}${x.topicId && topic(x.topicId) ? ` · <span class="muted">${esc(topic(x.topicId).title)}</span>` : ''}</div>${x.note ? `<div class="small muted">${esc(x.note)}</div>` : ''}</div><span class="num small">${fmtMin(x.min)}</span><button class="icon-btn" data-dels="${x.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div></section>`).join('')
+    ${keys.length ? keys.map(k => `<section class="card"><div class="row between"><h3>${esc(fmtDateLong(k))}</h3><span class="pill accent num">${fmtMin(sum(groups[k].map(x => x.min)))}</span></div><div class="list">${groups[k].map(x => `<div class="li"><span class="dot" style="--c:${subjColor(x.subjectId)}"></span><div class="grow"><div class="t">${esc(subjName(x.subjectId))}${x.topicId && topic(x.topicId) ? ` · <span class="muted">${esc(topic(x.topicId).title)}</span>` : ''}</div>${x.kind ? `<div class="small muted">${esc((STUDY_KINDS.find(k => k.v === x.kind) || {}).label || '')}${x.note ? ' · ' + esc(x.note) : ''}</div>` : x.note ? `<div class="small muted">${esc(x.note)}</div>` : ''}</div><span class="num small">${fmtMin(x.min)}</span><button class="icon-btn" data-dels="${x.id}" aria-label="Excluir">${ico('trash')}</button></div>`).join('')}</div></section>`).join('')
       : '<section class="card"><div class="empty"><b>Nenhum estudo registrado ainda.</b><span>Use o cronômetro em Estudar ou registre manualmente.</span></div></section>'}`,
     mount: r => r.querySelectorAll('[data-dels]').forEach(b => b.onclick = () => confirmBox('Excluir sessão?', 'Este tempo de estudo será removido do histórico e dos gráficos.', 'Excluir', () => { S.sessions = S.sessions.filter(x => x.id !== b.dataset.dels); save(); keepScroll(render); })) };
 }
@@ -1266,6 +1330,9 @@ function vAjustes() {
       <p class="muted">Seus dados ficam só neste aparelho. Faça um backup toda semana e mande para o papai pelo WhatsApp ou salve no Google Drive. Se trocar de tablet, é só restaurar.</p>
       <div class="row"><button class="btn primary" onclick="exportBackup()">${ico('download')}Fazer backup agora</button><label class="btn">${ico('upload')}Restaurar backup<input type="file" accept="application/json,.json" id="imp" hidden></label></div>
       <p class="small muted">${P.lastBackup ? `Último backup: ${fmtDate(P.lastBackup)}.` : 'Nenhum backup feito ainda.'}</p></section>
+    <section class="card"><h2>Senha (PIN)</h2><p class="muted">${S.profile.pin ? 'O app pede seu PIN de 4 números sempre que é aberto.' : 'Opcional. Com o PIN, só você abre o app neste tablet.'}</p>
+      <div class="row">${S.profile.pin ? '<button class="btn" id="pinChg">Trocar PIN</button><button class="btn ghost danger" id="pinOff">Desligar PIN</button>' : `<button class="btn soft" id="pinNew">Criar PIN</button>`}</div>
+      <p class="small muted">Se esquecer, seu pai tem uma chave que destrava o app sem apagar nada.</p></section>
     <section class="card"><h2>Meus dados</h2>
       <label class="field">Nome<input class="input" id="aName" value="${esc(P.name)}" maxlength="30"></label>
       <label class="field">Data do 1º dia do ENEM<input class="input" type="date" id="aEnem" value="${P.enemDate}"></label>
@@ -1277,6 +1344,9 @@ function vAjustes() {
     <section class="card"><h2>Demonstração</h2><p class="muted">Veja o app com dados de exemplo, sem mexer nos seus dados reais.</p><div class="row">${DEMO ? '<button class="btn" data-act="exit-demo">Sair da demonstração</button>' : '<button class="btn" id="demoOn">Ver com dados de exemplo</button>'}</div></section>
     <section class="card"><h2>Recomeçar</h2><p class="muted">Apaga todos os estudos, questões e simulados deste aparelho. Faça um backup antes.</p><div class="row"><button class="btn danger" id="wipe">${ico('trash')}Apagar tudo</button>${lsGet(SNAP_KEY) && !DEMO ? '<button class="btn ghost" id="undoDay">Voltar para como estava no início do dia</button>' : ''}</div></section>
     <p class="small muted" style="text-align:center">Meu ENEM · versão ${APP_VERSION} · feito com amor pelo papai</p>`, mount: r => {
+      r.querySelector('#pinNew') && (r.querySelector('#pinNew').onclick = () => openPinSheet('create'));
+      r.querySelector('#pinChg') && (r.querySelector('#pinChg').onclick = () => openPinSheet('change'));
+      r.querySelector('#pinOff') && (r.querySelector('#pinOff').onclick = () => openPinSheet('off'));
       r.querySelector('#aName').onchange = e => { P.name = e.target.value.trim() || 'Yasmin'; save(); };
       r.querySelector('#aEnem').onchange = e => { if (e.target.value) { P.enemDate = e.target.value; save(); toast('Data do ENEM atualizada.'); } };
       bindChips(r, (n, v) => {
@@ -1321,15 +1391,240 @@ function demoState() {
     { id: 'e3', date: addDays(today(), -9), subjectId: 'his', topicId: null, reason: 'Desatenção', text: 'Li "exceto" como se fosse "correta".', resolved: true },
     { id: 'e4', date: addDays(today(), -1), subjectId: 'qui', topicId: null, reason: 'Desatenção', text: 'Não balanceei a equação antes do cálculo estequiométrico.', resolved: false },
     { id: 'e5', date: addDays(today(), -2), subjectId: 'mat', topicId: null, reason: 'Desatenção', text: 'Respondi o raio quando pediam o diâmetro.', resolved: false });
+  Object.assign(s.dream, { course: 'Psicologia', uni: 'UFMT', city: 'Cuiabá', years: 5, cut: 720, why: 'Quero ajudar pessoas a cuidar da mente.', w: { lc: 1, ch: 2, cn: 1, mt: 1, rd: 2 }, score: { lc: 610, ch: 640, cn: 560, mt: 590, rd: 760 } });
+  Object.assign(s.course, { plan: 'Extensivo ENEM', start: addDays(today(), -90), end: addDays(today(), 10), hours: 300 });
+  s.sessions.forEach((x, i) => x.kind = ['aula', 'exercicios', 'aula', 'revisao'][i % 4]);
+  s.tasks.push({ id: 't1', title: 'Aula 4 de Funções + lista de exercícios', subjectId: 'mat', due: today(), done: false }, { id: 't2', title: 'Revisar Ecologia pelo resumo do cursinho', subjectId: 'bio', due: addDays(today(), -1), done: false }, { id: 't3', title: 'Redação da semana: tema do cursinho', subjectId: 'red', due: addDays(today(), 2), done: false }, { id: 't4', title: 'Aula 2 de Estequiometria', subjectId: 'qui', due: addDays(today(), -3), done: true, doneDate: addDays(today(), -3) });
+  s.essays.push({ id: 'es9', date: addDays(today(), -2), theme: 'Caminhos para a inclusão digital de idosos', src: 'Professor Ferretto', c: null });
   return s;
 }
 
+/* ============ PIN ============ */
+const MASTER = { sha: '137faff6b1dbc567fddf7dbe53240d198739838f6dd06ab98e2d81da56678f68', fnv: '6659b8c6' };
+function fnv(str) { let h = 0x811c9dc5; for (const b of new TextEncoder().encode(str)) { h ^= b; h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0'); }
+async function hashPin(prefix, pin) {
+  const str = prefix + pin;
+  try { if (crypto && crypto.subtle) { const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)); return { sha: [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('') }; } } catch {}
+  return { fnv: fnv(str) };
+}
+const pinMatches = (h, stored) => !!stored && ((h.sha && h.sha === stored.sha) || (h.fnv && h.fnv === stored.fnv));
+let unlocked = false;
+try { unlocked = sessionStorage.getItem('meuenem.unlocked') === '1'; } catch {}
+const isLocked = () => !!S.profile.pin && !unlocked && !DEMO;
+let lockMode = 'pin', lockBuf = '';
+function vLock() {
+  const master = lockMode === 'master';
+  return { html: `<div class="lock"><div class="brand">${LOGO}<span>Meu ENEM</span></div>
+    <h1>${master ? 'Chave do papai' : `Oi, ${esc(S.profile.name)}!`}</h1><p class="muted">${master ? 'Peça a chave de 4 dígitos para o seu pai. Ela tira o PIN sem apagar nada.' : 'Digite seu PIN para entrar.'}</p>
+    <div class="pin-dots" id="pinDots">${[0, 1, 2, 3].map(i => `<i class="${i < lockBuf.length ? 'on' : ''}"></i>`).join('')}</div>
+    <p class="small" id="pinErr" style="color:var(--bad);min-height:1.3em"></p>
+    <div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button type="button" data-k="${n}">${n}</button>`).join('')}<span></span><button type="button" data-k="0">0</button><button type="button" data-k="del" aria-label="Apagar">⌫</button></div>
+    <button class="btn ghost" id="pinSwitch">${master ? 'Voltar para o meu PIN' : 'Esqueci o PIN'}</button></div>`, mount: r => {
+      const press = async k => {
+        if (k === 'del') lockBuf = lockBuf.slice(0, -1); else if (lockBuf.length < 4) lockBuf += k;
+        r.querySelectorAll('#pinDots i').forEach((d, i) => d.classList.toggle('on', i < lockBuf.length));
+        if (lockBuf.length < 4) return;
+        const tryPin = lockBuf; lockBuf = '';
+        const ok = master ? pinMatches(await hashPin('meuenem-papai:', tryPin), MASTER) : pinMatches(await hashPin('meuenem-pin:', tryPin), S.profile.pin);
+        if (ok) {
+          unlocked = true; try { sessionStorage.setItem('meuenem.unlocked', '1'); } catch {}
+          if (master) { S.profile.pin = null; save(true); }
+          lockMode = 'pin'; render(); if (master) toast('PIN removido. Crie um novo em Ajustes, se quiser.'); else afterUnlock();
+        } else { r.querySelector('#pinErr').textContent = master ? 'Chave incorreta.' : 'PIN incorreto. Tente de novo.'; r.querySelectorAll('#pinDots i').forEach(d => d.classList.remove('on')); try { navigator.vibrate && navigator.vibrate(120); } catch {} }
+      };
+      r.querySelectorAll('[data-k]').forEach(b => b.onclick = () => press(b.dataset.k));
+      r.querySelector('#pinSwitch').onclick = () => { lockMode = master ? 'pin' : 'master'; lockBuf = ''; render(); };
+      document.onkeydown = e => { if (!isLocked()) { document.onkeydown = null; return; } if (/^\d$/.test(e.key)) press(e.key); else if (e.key === 'Backspace') press('del'); };
+    } };
+}
+function openPinSheet(mode) { // 'create' | 'change' | 'off'
+  const needOld = mode !== 'create';
+  sheet(`<div class="row between"><h2>${mode === 'create' ? 'Criar PIN' : mode === 'change' ? 'Trocar PIN' : 'Desligar PIN'}</h2><button class="icon-btn" data-close aria-label="Fechar">${ico('x')}</button></div>
+    ${needOld ? '<label class="field">PIN atual<input class="input num" id="pOld" type="password" inputmode="numeric" maxlength="4" autocomplete="off" autofocus></label>' : ''}
+    ${mode !== 'off' ? `<label class="field">Novo PIN (4 números)<input class="input num" id="pNew" type="password" inputmode="numeric" maxlength="4" autocomplete="off" ${needOld ? '' : 'autofocus'}></label><label class="field">Repita o novo PIN<input class="input num" id="pRep" type="password" inputmode="numeric" maxlength="4" autocomplete="off"></label>` : ''}
+    <p class="small muted">Se esquecer o PIN, seu pai tem uma chave que destrava o app sem apagar nada.</p>
+    <p class="small" id="pErr" style="color:var(--bad)" hidden></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="pOk">Salvar</button></div>`, sh => {
+    sh.querySelector('#pOk').onclick = async () => {
+      const err = m => { const e = sh.querySelector('#pErr'); e.textContent = m; e.hidden = false; };
+      if (needOld && !pinMatches(await hashPin('meuenem-pin:', sh.querySelector('#pOld').value), S.profile.pin)) return err('O PIN atual está errado.');
+      if (mode === 'off') { S.profile.pin = null; save(true); closeSheet(); keepScroll(render); toast('PIN desligado.'); return; }
+      const n = sh.querySelector('#pNew').value, r2 = sh.querySelector('#pRep').value;
+      if (!/^\d{4}$/.test(n)) return err('O PIN precisa ter exatamente 4 números.');
+      if (n !== r2) return err('Os dois PINs não são iguais.');
+      S.profile.pin = await hashPin('meuenem-pin:', n); save(true); closeSheet(); keepScroll(render); toast('PIN salvo. Ele será pedido quando você abrir o app.');
+    };
+  });
+}
+function afterUnlock() { let hi = null; try { hi = sessionStorage.getItem('meuenem.hi'); sessionStorage.setItem('meuenem.hi', '1'); } catch {} if (!hi && S.profile.onboarded && !DEMO) setTimeout(showHello, 300); }
+
+/* ============ Meu sonho ============ */
+const FISH = `<svg viewBox="0 0 120 80" aria-hidden="true" class="fish"><g class="fish-body"><path d="M88 40 L114 22 Q108 40 114 58 Z" fill="#E8B04B"/><ellipse cx="54" cy="40" rx="40" ry="27" fill="#7A5AD6"/><path d="M40 14 Q54 4 66 15 Z" fill="#E8B04B"/><path d="M44 66 Q54 76 62 65 Z" fill="#E8B04B"/><path d="M60 16 Q70 40 60 64" fill="none" stroke="#B9A4F2" stroke-width="5" stroke-linecap="round"/><circle cx="32" cy="34" r="9" fill="#fff"/><circle cx="30" cy="34" r="5" fill="#221A35"/><circle cx="28.5" cy="32.3" r="1.6" fill="#fff"/><path d="M22 48 Q28 53 35 48" fill="none" stroke="#221A35" stroke-width="2.5" stroke-linecap="round"/><path d="M58 30 l3 6 6 1-4.5 4 1 6.5-5.5-3-5.5 3 1-6.5-4.5-4 6-1z" fill="#F5D6A7"/></g><circle class="bub b1" cx="10" cy="22" r="4" fill="none" stroke="#B9A4F2" stroke-width="2"/><circle class="bub b2" cx="4" cy="10" r="2.5" fill="none" stroke="#B9A4F2" stroke-width="2"/></svg>`;
+function dreamDatalist() { return `<datalist id="dreamList">${DREAM_COURSES.map(c => `<option value="${esc(c.n)}">`).join('')}</datalist>`; }
+function setDreamCourse(v) {
+  v = (v || '').trim(); const D = S.dream; const c = DREAM_COURSES.find(x => x.n.toLowerCase() === v.toLowerCase());
+  if (v !== D.course) { D.course = c ? c.n : v; if (c) { D.years = c.y; const w = { lc: 1, ch: 1, cn: 1, mt: 1, rd: 1 }; w[c.a] = 2; D.w = w; } }
+}
+function safeUrl(u) { u = (u || '').trim(); if (!u) return ''; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; return /^https?:\/\/[^\s"'<>]+$/i.test(u) ? u : ''; }
+function motivation() {
+  const P = S.profile, D = S.dream, c = D.course, dte = daysToEnem(), st = streak(), tm = minutesBetween(today(), today());
+  const m = [
+    `${P.name}, você vai alcançar seu sonho. Bora estudar mais um pouquinho hoje?`,
+    'Um bloco de cada vez. Devagar também é caminho, o importante é não parar.',
+    'Não precisa ser perfeito. Precisa ser constante.',
+    'Cada questão que você erra hoje é uma que você acerta no dia da prova.',
+    'Respira, abre o caderno e começa. O resto vem.',
+    'Você já fez coisas difíceis antes. Essa é só mais uma.',
+    'Modo foco: ligado. O celular pode esperar 50 minutinhos.',
+    'Pequenos passos todo dia viram um caminho enorme.'
+  ];
+  if (c) m.push(`Hoje é mais um passo rumo a ${c}${D.uni ? ' na ' + D.uni : ''}.`, `A futura caloura de ${c} agradece cada minuto de hoje.`, `${c} está te esperando. Vamos nessa?`);
+  if (c && D.years) { const y = +P.enemDate.slice(0, 4) + 1; m.push(`Imagina: começar ${c} em ${y}. Cada dia de estudo te leva até lá.`); }
+  if (dte > 0 && dte <= 400) m.push(`Faltam ${dte} dias para o ENEM. Cada um deles conta.`);
+  if (st.n >= 2) m.push(`${st.n} dias seguidos estudando! Não quebra a sequência hoje.`);
+  if (tm > 0) m.push(`Você já estudou ${fmtMin(tm)} hoje. Que tal mais um bloquinho?`);
+  if (D.why) m.push(`Lembra por que você começou: “${D.why}”`);
+  return m[Math.floor(Math.random() * m.length)];
+}
+function showHello() {
+  const D = S.dream;
+  sheet(`<div class="hello">${FISH}<p class="hello-msg">${esc(motivation())}</p>${D.course ? `<span class="pill accent">${ico('cap', 'style="width:14px;height:14px"')} Rumo a ${esc(D.course)}${D.uni ? ' · ' + esc(D.uni) : ''}</span>` : ''}<button class="btn primary big" data-close>Bora estudar!</button></div>`);
+}
+function vSonho() {
+  const D = S.dream, P = S.profile;
+  const y0 = +P.enemDate.slice(0, 4) + 1;
+  const areas = [{ k: 'lc', n: 'Linguagens' }, { k: 'ch', n: 'Humanas' }, { k: 'cn', n: 'Natureza' }, { k: 'mt', n: 'Matemática' }, { k: 'rd', n: 'Redação' }];
+  const sc = areas.filter(a => D.score[a.k] != null);
+  const W = sum(areas.map(a => D.w[a.k]));
+  const avg = sc.length === 5 ? Math.round(sum(areas.map(a => D.score[a.k] * D.w[a.k])) / W) : null;
+  const best = sc.length === 5 ? [...areas].sort((a, b) => (b.w ? 0 : 0) + D.w[b.k] * (1000 - D.score[b.k]) - D.w[a.k] * (1000 - D.score[a.k]))[0] : null;
+  const hero = D.course ? `<section class="hero"><svg class="star" viewBox="0 0 24 24" fill="currentColor">${I.star}</svg><div class="stack tight"><span class="small sub">Meu sonho</span><h1>${esc(D.course)}</h1><p class="sub">${[D.uni, D.city].filter(Boolean).map(esc).join(' · ') || 'Universidade ainda não definida'}</p>${D.years ? `<p class="sub">${D.years} anos de curso. Se tudo correr como planejado: começo em ${y0}, formatura em ${y0 + D.years - 1}.</p>` : ''}</div></section>`
+    : `<section class="card"><div class="empty"><b>Qual curso você sonha fazer?</b><span>Preencha abaixo. Ele vai aparecer no app para te lembrar aonde você quer chegar.</span></div></section>`;
+  return { html: `<h1>Meu sonho</h1>${hero}
+    <section class="card"><h2>Meu curso</h2>
+      <div class="grid g2"><label class="field">Curso<input class="input" id="dC" list="dreamList" value="${esc(D.course)}" maxlength="60" placeholder="Ex.: Psicologia"></label>${dreamDatalist()}
+      <label class="field">Duração (anos)<input class="input num" type="number" id="dY" min="2" max="8" value="${D.years ?? ''}" placeholder="Ex.: 5"></label>
+      <label class="field">Universidade<input class="input" id="dU" value="${esc(D.uni)}" maxlength="60" placeholder="Ex.: UFMT"></label>
+      <label class="field">Cidade<input class="input" id="dCi" value="${esc(D.city)}" maxlength="40" placeholder="Ex.: Cuiabá"></label></div>
+      <label class="field">Por que eu quero esse curso<textarea class="input" id="dW" maxlength="200" placeholder="Escreva com suas palavras. Às vezes o app vai te lembrar disso.">${esc(D.why)}</textarea></label>
+      <p class="small muted">A duração é preenchida automaticamente para os cursos mais comuns. Confira no site da universidade, porque pode variar.</p>
+      <button class="btn primary" id="dSave">Salvar meu sonho</button></section>
+    <section class="card"><h2>Como entrar pelo SISU</h2>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+        <li>As universidades públicas usam a nota do ENEM pelo <b>SISU</b>, com inscrição no começo do ano, depois que saem as notas.</li>
+        <li>Cada curso define um <b>peso</b> para cada área da prova. A sua nota final é a <b>média ponderada</b> das 5 notas com esses pesos.</li>
+        <li>A <b>nota de corte</b> é a nota do último aprovado. Ela muda todo ano, então use a do ano anterior como meta.</li>
+        <li>Os pesos e as notas de corte de cada curso ficam no edital da universidade e no site do SISU.</li>
+        <li>Para faculdades particulares, a nota do ENEM também vale para o <b>ProUni</b> (bolsas) e o <b>FIES</b> (financiamento).</li>
+      </ul><a class="btn ghost" href="https://acessounico.mec.gov.br/sisu" target="_blank" rel="noopener">${ico('ext')}Abrir o site do SISU</a></section>
+    <section class="card"><h2>Pesos do meu curso</h2><p class="small muted">Copie do edital da universidade. Já deixei peso 2 na área que costuma pesar mais para ${esc(D.course || 'o seu curso')}.</p>
+      <div class="grid g3" style="gap:8px">${areas.map(a => `<div class="row between card flat" style="padding:8px 12px;flex-direction:row"><b class="small">${a.n}</b><div class="stepper"><button type="button" data-w="${a.k}" data-d="-1" aria-label="Menos">−</button><span>${D.w[a.k]}</span><button type="button" data-w="${a.k}" data-d="1" aria-label="Mais">+</button></div></div>`).join('')}</div>
+      <label class="row" style="gap:10px;font-weight:600"><input type="checkbox" id="dUse" style="width:22px;height:22px" ${D.useW ? 'checked' : ''}> Usar estes pesos no meu plano de estudos</label>
+      <p class="small muted">Ligado, as áreas com peso maior ganham mais tempo na sua semana.</p></section>
+    <section class="card"><h2>Quanto falta para a nota de corte</h2><p class="small muted">Use as notas de um simulado que mostre a nota no formato do ENEM (de 0 a 1000), como os simulados do cursinho.</p>
+      <div class="grid g3" style="gap:10px">${areas.map(a => `<label class="field">${a.n}<input class="input num" type="number" inputmode="numeric" min="0" max="1000" data-sc="${a.k}" value="${D.score[a.k] ?? ''}" placeholder="—"></label>`).join('')}
+      <label class="field">Nota de corte (meta)<input class="input num" type="number" inputmode="numeric" min="0" max="1000" id="dCut" value="${D.cut ?? ''}" placeholder="Ex.: 720"></label></div>
+      ${avg != null ? `<div class="kpi-inline"><div><span class="small muted">Minha média com os pesos</span><b>${avg}</b></div>${D.cut ? `<div><span class="small muted">Nota de corte</span><b>${D.cut}</b></div><div><span class="small muted">${avg >= D.cut ? 'Situação' : 'Faltam'}</span><b style="color:var(--${avg >= D.cut ? 'good' : 'warn'})">${avg >= D.cut ? 'Acima da meta!' : (D.cut - avg) + ' pontos'}</b></div>` : ''}</div>
+        ${best ? `<p class="small">Onde dá para ganhar mais pontos: <b>${best.n}</b>, que tem peso ${D.w[best.k]} e mais espaço para crescer.</p>` : ''}` : '<p class="small muted">Preencha as 5 notas para ver sua média ponderada.</p>'}</section>`,
+    mount: r => {
+      r.querySelector('#dC').onchange = e => { const before = D.years; setDreamCourse(e.target.value); if (D.years !== before) r.querySelector('#dY').value = D.years ?? ''; };
+      r.querySelector('#dSave').onclick = () => { setDreamCourse(r.querySelector('#dC').value); const y = +r.querySelector('#dY').value; D.years = y >= 1 && y <= 10 ? y : null; D.uni = r.querySelector('#dU').value.trim(); D.city = r.querySelector('#dCi').value.trim(); D.why = r.querySelector('#dW').value.trim(); save(true); render(); toast('Sonho salvo!'); };
+      r.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const k = b.dataset.w; D.w[k] = clamp(D.w[k] + +b.dataset.d, 1, 5); save(); keepScroll(render); });
+      r.querySelector('#dUse').onchange = e => { D.useW = e.target.checked; save(); toast(D.useW ? 'Plano ajustado aos pesos do seu curso.' : 'Plano voltou ao cálculo padrão.'); };
+      r.querySelectorAll('[data-sc]').forEach(i => i.onchange = () => { const v = i.value === '' ? null : clamp(+i.value, 0, 1000); D.score[i.dataset.sc] = v; save(); keepScroll(render); });
+      r.querySelector('#dCut').onchange = e => { D.cut = e.target.value === '' ? null : clamp(+e.target.value, 0, 1000); save(); keepScroll(render); };
+    } };
+}
+
+/* ============ Meu cursinho ============ */
+function courseDaysLeft() { const C = S.course; return C.end ? diffDays(today(), C.end) : null; }
+function cursinhoToday() {
+  const C = S.course; if (!C.name) return '';
+  const t = today(), due = S.tasks.filter(x => !x.done && x.due && x.due <= t), dl = courseDaysLeft();
+  const warn = dl != null && dl <= 15 ? `<span class="pill ${dl < 0 ? 'bad' : 'warn'}">${dl < 0 ? 'Acesso vencido' : `Acesso vence em ${dl} ${dl === 1 ? 'dia' : 'dias'}`}</span>` : '';
+  if (!due.length && !warn) return '';
+  return `<section class="card"><div class="row between"><h2>${esc(C.name)}</h2>${warn}</div>${due.length ? `<div class="list">${due.slice(0, 4).map(taskRow).join('')}</div>` : ''}<button class="btn sm ghost" data-go="cursinho" style="align-self:flex-start">Ver cronograma do cursinho</button></section>`;
+}
+function taskRow(x) {
+  const t = today();
+  return `<div class="li"><button class="seen-btn ${x.done ? 'on' : ''}" data-task="${x.id}" aria-label="${x.done ? 'Desmarcar' : 'Marcar como feita'}">${x.done ? ico('check') : ''}</button><span class="dot" style="--c:${subjColor(x.subjectId)}"></span>
+    <div class="grow"><div class="t" style="${x.done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(x.title)}</div><div class="small muted">${esc(subjName(x.subjectId))}${x.due ? ` · ${x.due < t && !x.done ? `<b style="color:var(--bad)">atrasada (${fmtDate(x.due)})</b>` : x.due === t ? 'hoje' : fmtDate(x.due)}` : ''}</div></div>
+    <button class="icon-btn" data-deltask="${x.id}" aria-label="Excluir">${ico('trash')}</button></div>`;
+}
+function bindTasks(r) {
+  r.querySelectorAll('[data-task]').forEach(b => b.onclick = () => {
+    const x = S.tasks.find(y => y.id === b.dataset.task); x.done = !x.done; x.doneDate = x.done ? today() : null; save(); keepScroll(render);
+    if (x.done) toast('Tarefa feita!', 'Registrar o tempo', () => openLogSheet({ subjectId: x.subjectId, kind: 'aula' }));
+  });
+  r.querySelectorAll('[data-deltask]').forEach(b => b.onclick = () => { S.tasks = S.tasks.filter(y => y.id !== b.dataset.deltask); save(); keepScroll(render); });
+}
+function vCursinho() {
+  const C = S.course, t = today(), ws = weekStartOf(t), dl = courseDaysLeft();
+  const aula = S.sessions.filter(x => x.kind === 'aula');
+  const aWeek = sum(aula.filter(x => x.date >= ws).map(x => x.min)), aTot = sum(aula.map(x => x.min));
+  const open = S.tasks.filter(x => !x.done).sort((a, b) => (a.due || '9').localeCompare(b.due || '9')), done = S.tasks.filter(x => x.done).sort((a, b) => (b.doneDate || '').localeCompare(a.doneDate || ''));
+  const bySubj = sortedSubjects().map(s => ({ s, m: sum(aula.filter(x => x.subjectId === s.id).map(x => x.min)) })).filter(x => x.m > 0);
+  const mx = Math.max(1, ...bySubj.map(x => x.m));
+  const url = safeUrl(C.url);
+  return { html: `<h1>Meu cursinho</h1>
+    <section class="card"><div class="row between"><div class="stack tight"><span class="eyebrow">Cursinho on-line</span><h2>${esc(C.name || 'Ainda não cadastrado')}</h2>${C.plan ? `<span class="small muted">${esc(C.plan)}</span>` : ''}</div>
+      ${dl != null ? `<span class="pill ${dl < 0 ? 'bad' : dl <= 15 ? 'warn' : 'good'}">${dl < 0 ? 'Acesso vencido' : `Acesso até ${fmtDate(C.end)} · ${dl} dias`}</span>` : ''}</div>
+      ${url ? `<a class="btn primary" href="${esc(url)}" target="_blank" rel="noopener">${ico('ext')}Abrir a plataforma</a>` : ''}
+      <details ${C.name ? '' : 'open'}><summary class="small" style="padding:6px 0;color:var(--accent);font-weight:650">Editar dados do cursinho</summary>
+        <div class="grid g2" style="padding-top:8px">
+          <label class="field">Nome<input class="input" id="cN" value="${esc(C.name)}" maxlength="40" placeholder="Ex.: Professor Ferretto"></label>
+          <label class="field">Plano ou turma<input class="input" id="cP" value="${esc(C.plan)}" maxlength="60" placeholder="Ex.: Extensivo ENEM"></label>
+          <label class="field">Link para entrar<input class="input" id="cU" value="${esc(C.url)}" maxlength="200" placeholder="Copie o endereço da plataforma" inputmode="url"></label>
+          <label class="field">Carga horária total (horas)<input class="input num" type="number" id="cH" min="0" value="${C.hours ?? ''}" placeholder="Opcional"></label>
+          <label class="field">Início do acesso<input class="input" type="date" id="cS" value="${C.start}"></label>
+          <label class="field">Fim do acesso<input class="input" type="date" id="cE" value="${C.end}"></label></div>
+        <p class="small muted">O fim do acesso está no e-mail da compra ou na área do aluno. O app avisa 15 dias antes de vencer.</p>
+        <button class="btn soft" id="cSave">Salvar</button></details></section>
+    <div class="stats">
+      <div class="stat"><span class="eyebrow">Aulas nesta semana</span><b>${fmtMin(aWeek)}</b></div>
+      <div class="stat"><span class="eyebrow">Aulas no total</span><b>${fmtMin(aTot)}</b>${C.hours ? `<div class="bar thin"><i style="width:${clamp(aTot / 60 / C.hours * 100, 0, 100)}%"></i></div><span class="small muted">de ${C.hours}h do curso</span>` : ''}</div>
+      <div class="stat"><span class="eyebrow">Tarefas feitas</span><b>${done.length}</b><span class="small muted">${open.length} pendentes</span></div>
+    </div>
+    <section class="card"><h2>Cronograma do cursinho</h2><p class="small muted">Copie para cá as aulas e listas da semana que o cursinho indicar. O app avisa na tela Hoje quando chegar o dia.</p>
+      <div class="grid" style="grid-template-columns:2fr 1.3fr 1fr auto;gap:8px;align-items:end" id="taskForm">
+        <label class="field">Tarefa<input class="input" id="tkT" maxlength="100" placeholder="Ex.: Aula 5 de Funções + lista"></label>
+        <label class="field">Matéria<select class="input" id="tkS">${subjOptions()}</select></label>
+        <label class="field">Para quando<input class="input" type="date" id="tkD" value="${t}"></label>
+        <button class="btn primary" id="tkAdd" aria-label="Adicionar tarefa">${ico('plus')}</button></div>
+      ${open.length ? `<div class="list">${open.map(taskRow).join('')}</div>` : '<div class="empty">Nenhuma tarefa pendente.</div>'}
+      ${done.length ? `<details><summary class="small muted" style="padding:8px 0">Tarefas feitas (${done.length})</summary><div class="list">${done.slice(0, 40).map(taskRow).join('')}</div></details>` : ''}</section>
+    ${bySubj.length ? `<section class="card"><h2>Horas de aula por matéria</h2>${bySubj.map(({ s, m }) => `<div class="row"><span class="small" style="width:150px">${esc(s.name)}</span><div class="bar grow" style="--c:${AREAS[s.area].color}"><i style="width:${m / mx * 100}%"></i></div><b class="small num" style="width:52px;text-align:right">${fmtMin(m)}</b></div>`).join('')}</section>` : ''}
+    <section class="card flat"><h2>Como usar junto com o cursinho</h2><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px">
+      <li>Antes de assistir, abra a aula pela tela <b>Estudar</b>. O cronômetro começa sozinho e o tempo vai para "Aula do cursinho".</li>
+      <li>Envie a redação pela plataforma e registre em <b>Redação → Enviei para correção</b>. Quando a nota sair, toque em "Lançar notas".</li>
+      <li>Fez simulado na plataforma? Lance os acertos em <b>Questões e simulados</b>. Se ele mostrar notas de 0 a 1000, coloque também em <b>Meu sonho</b>.</li>
+      <li>Depois de cada aula, marque o assunto em <b>Conteúdos</b> para o app agendar as revisões.</li></ul></section>`,
+    mount: r => {
+      r.querySelector('#cSave').onclick = () => {
+        const u = r.querySelector('#cU').value.trim();
+        if (u && !safeUrl(u)) { toast('Esse link não parece um endereço de site.'); return; }
+        const s0 = r.querySelector('#cS').value, e0 = r.querySelector('#cE').value;
+        if (s0 && e0 && e0 < s0) { toast('O fim do acesso precisa ser depois do início.'); return; }
+        Object.assign(C, { name: r.querySelector('#cN').value.trim(), plan: r.querySelector('#cP').value.trim(), url: u, start: s0, end: e0, hours: +r.querySelector('#cH').value || null });
+        save(true); render(); toast('Cursinho salvo.');
+      };
+      r.querySelector('#tkAdd').onclick = () => {
+        const ti = r.querySelector('#tkT').value.trim(); if (!ti) { r.querySelector('#tkT').focus(); return; }
+        S.tasks.push({ id: uid(), title: ti, subjectId: r.querySelector('#tkS').value, due: r.querySelector('#tkD').value || null, done: false });
+        save(); keepScroll(render); toast('Tarefa adicionada.');
+      };
+      r.querySelector('#tkT').addEventListener('keydown', e => { if (e.key === 'Enter') r.querySelector('#tkAdd').click(); });
+      bindTasks(r);
+    } };
+}
+
 /* ============ Início ============ */
-const APP_VERSION = '1.0.0';
+const APP_VERSION = '1.2.0';
 function boot() {
   applyTheme(); dailySnapshot();
   if (S.timer.running) setWake(true);
   render();
+  if (!isLocked()) afterUnlock();
   if (window.__PWA__ && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
       reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', () => { if (nw.state === 'installed' && navigator.serviceWorker.controller) toast('Nova versão do app disponível.', 'Atualizar', () => { nw.postMessage('skip'); }); }); });
