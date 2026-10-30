@@ -6,7 +6,7 @@ Os dados da Yasmin ficam guardados no próprio tablet dela.
 OPÇÃO 1 — Hostinger (o mesmo lugar do abitus.com.br)
 1. Entre no hPanel > Arquivos > Gerenciador de Arquivos.
 2. Dentro de public_html, crie uma pasta chamada:  enem
-3. Envie para dentro dela TODOS os arquivos desta pasta (index.html, sw.js,
+3. Envie para dentro dela TODOS os arquivos desta pasta (index.html, guia.html, sw.js,
    manifest.webmanifest e a pasta icons).
 4. O link fica:  https://abitus.com.br/enem/
    (precisa ser https — o Hostinger já tem SSL ativo no domínio)

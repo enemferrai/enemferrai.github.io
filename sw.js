@@ -1,5 +1,5 @@
 // Meu ENEM — funciona offline
-const CACHE = 'meu-enem-1.2.0';
+const CACHE = 'meu-enem-1.2.1';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png'];
 self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))));
 self.addEventListener('message', e => { if (e.data === 'skip') self.skipWaiting(); });
