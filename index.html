@@ -1278,7 +1278,8 @@ function vHistorico() {
 /* ============ Mais ============ */
 function vMais() {
   const due = dueReviews().length;
-  return { html: `<h1>Mais</h1><section class="card" style="padding:6px 8px"><div class="list">${NAV.filter(n => !n.tab && n.r !== 'carta').map(n => `<button class="li" data-go="${n.r}" style="border-left:0;border-right:0;border-top:0;background:none;cursor:pointer;width:100%;text-align:left;color:var(--ink);padding:14px 8px">${ico(n.icon, 'style="width:22px;height:22px;color:var(--accent)"')}<span class="grow t">${n.label}</span>${n.r === 'revisoes' && due ? `<span class="pill bad">${due}</span>` : ''}${ico('chev', 'style="width:18px;height:18px;color:var(--muted)"')}</button>`).join('')}</div></section>
+  return { mount: r => { r.querySelector('#maisUpd').onclick = () => checkUpdate(); }, html: `<h1>Mais</h1><section class="card" style="padding:6px 8px"><div class="list">${NAV.filter(n => !n.tab && n.r !== 'carta').map(n => `<button class="li" data-go="${n.r}" style="border-left:0;border-right:0;border-top:0;background:none;cursor:pointer;width:100%;text-align:left;color:var(--ink);padding:14px 8px">${ico(n.icon, 'style="width:22px;height:22px;color:var(--accent)"')}<span class="grow t">${n.label}</span>${n.r === 'revisoes' && due ? `<span class="pill bad">${due}</span>` : ''}${ico('chev', 'style="width:18px;height:18px;color:var(--muted)"')}</button>`).join('')}</div></section>
+    <section class="card" style="padding:6px 8px"><button class="li" id="maisUpd" style="border:0;background:none;cursor:pointer;width:100%;text-align:left;color:var(--ink);padding:14px 8px">${ico('download', 'style="width:22px;height:22px;color:var(--accent)"')}<span class="grow t">Procurar atualização</span><span class="small muted num">v${APP_VERSION}</span></button></section>
     <section class="card" style="padding:6px 8px"><a class="li" href="https://enemferrai.github.io/guia.html" target="_blank" rel="noopener" style="text-decoration:none;color:var(--ink);padding:14px 8px">${ico('book', 'style="width:22px;height:22px;color:var(--accent)"')}<span class="grow t">Como usar o app (guia)</span>${ico('ext', 'style="width:18px;height:18px;color:var(--muted)"')}</a></section>
     <section class="card flat" style="padding:6px 8px"><button class="li" data-go="carta" style="border:0;background:none;cursor:pointer;width:100%;text-align:left;color:var(--ink);padding:14px 8px">${ico('heart', 'style="width:22px;height:22px;color:var(--mt)"')}<span class="grow t">Carta do papai</span>${ico('chev', 'style="width:18px;height:18px;color:var(--muted)"')}</button></section>` };
 }
@@ -1327,6 +1328,9 @@ function vAjustes() {
   const P = S.profile;
   return { html: `
     <h1>Ajustes e backup</h1>
+    <section class="card"><div class="row between"><h2>Atualização do app</h2><span class="pill accent num">versão ${APP_VERSION}</span></div>
+      <p class="muted">Quando o papai avisar que tem novidade, toque aqui. Seus dados continuam todos salvos.</p>
+      <button class="btn primary" id="updBtn" style="align-self:flex-start">${ico('download')}Procurar atualização</button></section>
     <section class="card"><h2>Cópia de segurança</h2>
       <p class="muted">Seus dados ficam só neste aparelho. Faça um backup toda semana e mande para o papai pelo WhatsApp ou salve no Google Drive. Se trocar de tablet, é só restaurar.</p>
       <div class="row"><button class="btn primary" onclick="exportBackup()">${ico('download')}Fazer backup agora</button><label class="btn">${ico('upload')}Restaurar backup<input type="file" accept="application/json,.json" id="imp" hidden></label></div>
@@ -1346,6 +1350,7 @@ function vAjustes() {
     <section class="card"><h2>Demonstração</h2><p class="muted">Veja o app com dados de exemplo, sem mexer nos seus dados reais.</p><div class="row">${DEMO ? '<button class="btn" data-act="exit-demo">Sair da demonstração</button>' : '<button class="btn" id="demoOn">Ver com dados de exemplo</button>'}</div></section>
     <section class="card"><h2>Recomeçar</h2><p class="muted">Apaga todos os estudos, questões e simulados deste aparelho. Faça um backup antes.</p><div class="row"><button class="btn danger" id="wipe">${ico('trash')}Apagar tudo</button>${lsGet(SNAP_KEY) && !DEMO ? '<button class="btn ghost" id="undoDay">Voltar para como estava no início do dia</button>' : ''}</div></section>
     <p class="small muted" style="text-align:center">Meu ENEM · versão ${APP_VERSION} · feito com amor pelo papai</p>`, mount: r => {
+      r.querySelector('#updBtn').onclick = e => checkUpdate(e.currentTarget);
       r.querySelector('#pinNew') && (r.querySelector('#pinNew').onclick = () => openPinSheet('create'));
       r.querySelector('#pinChg') && (r.querySelector('#pinChg').onclick = () => openPinSheet('change'));
       r.querySelector('#pinOff') && (r.querySelector('#pinOff').onclick = () => openPinSheet('off'));
@@ -1621,7 +1626,23 @@ function vCursinho() {
 }
 
 /* ============ Início ============ */
-const APP_VERSION = '1.2.1';
+const APP_VERSION = '1.3.0';
+let swReg = null;
+async function checkUpdate(btn) {
+  if (!swReg) { toast(navigator.onLine === false ? 'Sem internet agora. Tente de novo quando estiver conectada.' : 'Abra o app pelo link enemferrai.github.io para atualizar.'); return; }
+  if (navigator.onLine === false) { toast('Sem internet agora. Tente de novo quando estiver conectada.'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Procurando...'; }
+  const done = () => { if (btn) { btn.disabled = false; btn.innerHTML = ico('download') + 'Procurar atualização'; } };
+  const apply = w => { toast('Atualizando...'); w.postMessage('skip'); };
+  try {
+    await swReg.update();
+    if (swReg.waiting) return apply(swReg.waiting);
+    const nw = swReg.installing;
+    if (nw) { nw.addEventListener('statechange', () => { if (nw.state === 'installed') apply(nw); if (nw.state === 'redundant') { done(); toast('Não consegui atualizar. Tente de novo.'); } }); return; }
+    done(); toast(`Você já está com a versão mais recente (${APP_VERSION}).`);
+  } catch { done(); toast('Não consegui verificar agora. Confira a internet e tente de novo.'); }
+}
+window.checkUpdate = checkUpdate;
 function boot() {
   applyTheme(); dailySnapshot();
   if (S.timer.running) setWake(true);
@@ -1629,6 +1650,7 @@ function boot() {
   if (!isLocked()) afterUnlock();
   if (window.__PWA__ && 'serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
+      swReg = reg;
       reg.addEventListener('updatefound', () => { const nw = reg.installing; nw && nw.addEventListener('statechange', () => { if (nw.state === 'installed' && navigator.serviceWorker.controller) toast('Nova versão do app disponível.', 'Atualizar', () => { nw.postMessage('skip'); }); }); });
     }).catch(() => {});
     let reloaded = false;
