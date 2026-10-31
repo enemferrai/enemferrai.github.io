@@ -1349,7 +1349,13 @@ function vAjustes() {
     <section class="card"><h2>Ajuda</h2><p class="muted">Guia com as telas do app explicando cada parte.</p><a class="btn soft" href="https://enemferrai.github.io/guia.html" target="_blank" rel="noopener" style="align-self:flex-start">${ico('book')}Abrir o guia</a></section>
     <section class="card"><h2>Instalar no tablet</h2><p class="muted">${isStandalone() ? 'O app já está instalado neste aparelho.' : 'Instale para abrir pelo ícone e usar sem internet.'}</p>${isStandalone() ? '' : `<button class="btn soft" data-act="install">${ico('download')}Como instalar</button>`}</section>
     <section class="card"><h2>Demonstração</h2><p class="muted">Veja o app com dados de exemplo, sem mexer nos seus dados reais.</p><div class="row">${DEMO ? '<button class="btn" data-act="exit-demo">Sair da demonstração</button>' : '<button class="btn" id="demoOn">Ver com dados de exemplo</button>'}</div></section>
-    <section class="card"><h2>Recomeçar</h2><p class="muted">Apaga todos os estudos, questões e simulados deste aparelho. Faça um backup antes.</p><div class="row"><button class="btn danger" id="wipe">${ico('trash')}Apagar tudo</button>${lsGet(SNAP_KEY) && !DEMO ? '<button class="btn ghost" id="undoDay">Voltar para como estava no início do dia</button>' : ''}</div></section>
+    <section class="card"><h2>Recomeçar</h2><p class="muted">Escolha o que você quer zerar. Faça um backup antes, por segurança.</p>
+      <div class="list">
+        <div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:200px"><div class="t">Refazer meu plano</div><div class="small muted">Responde de novo as perguntas do início: sonho, tempo de cada dia e como se sente nas matérias. Seus estudos continuam salvos.</div></div><button class="btn sm soft" data-reset="plan">Refazer plano</button></div>
+        <div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:200px"><div class="t">Zerar meus estudos</div><div class="small muted">Apaga tempo estudado, questões, simulados, redações, erros, tarefas e conteúdos marcados. Mantém plano, sonho, cursinho e PIN.</div></div><button class="btn sm danger" data-reset="records">Zerar estudos</button></div>
+        <div class="li" style="flex-wrap:wrap"><div class="grow" style="min-width:200px"><div class="t">Começar do zero</div><div class="small muted">Apaga tudo e volta para a configuração inicial, como se fosse a primeira vez.</div></div><button class="btn sm danger" data-reset="all">Começar do zero</button></div>
+      </div>
+      ${lsGet(SNAP_KEY) && !DEMO ? '<button class="btn ghost" id="undoDay" style="align-self:flex-start">Desfazer o que fiz hoje</button>' : ''}</section>
     <p class="small muted" style="text-align:center">Meu ENEM · versão ${APP_VERSION} · feito com amor pelo papai</p>`, mount: r => {
       r.querySelector('#updBtn').onclick = e => checkUpdate(e.currentTarget);
       r.querySelector('#pinNew') && (r.querySelector('#pinNew').onclick = () => openPinSheet('create'));
@@ -1365,12 +1371,36 @@ function vAjustes() {
       });
       r.querySelector('#imp').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); e.target.value = ''; };
       r.querySelector('#demoOn') && (r.querySelector('#demoOn').onclick = () => { lsSet('meuenem.mode', 'demo'); lsDel(DEMO_KEY); S = load(); save(true); go('hoje'); toast('Modo demonstração ativado.'); });
-      r.querySelector('#wipe').onclick = () => confirmBox('Apagar tudo?', 'Todos os registros deste aparelho serão apagados. Isso não tem volta, a não ser que você tenha um backup.', 'Apagar tudo', () => {
-        const keep = { name: P.name, enemDate: P.enemDate, lang: P.lang, dayMin: P.dayMin, theme: P.theme };
-        S = freshState(); Object.assign(S.profile, keep, { letterSeen: true, onboarded: true }); applyLang(); save(true); go('hoje'); toast('Tudo apagado. Recomeço novo!'); });
+      r.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => openResetSheet(b.dataset.reset));
       r.querySelector('#undoDay') && (r.querySelector('#undoDay').onclick = () => confirmBox('Voltar ao início do dia?', 'Tudo que foi registrado hoje será desfeito.', 'Voltar', () => {
         try { S = migrate(JSON.parse(JSON.parse(lsGet(SNAP_KEY)).data)); save(true); render(); toast('Dados restaurados.'); } catch { toast('Não foi possível restaurar.'); } }));
     } };
+}
+function openResetSheet(kind) {
+  const P = S.profile;
+  const T = { plan: ['Refazer meu plano?', 'Você vai responder de novo as perguntas do início. Nada do que você estudou será apagado.', 'Refazer plano'],
+    records: ['Zerar meus estudos?', 'Tempo estudado, questões, simulados, redações, erros, tarefas e conteúdos marcados serão apagados deste aparelho. Isso não tem volta sem um backup.', 'Zerar estudos'],
+    all: ['Começar do zero?', 'Tudo será apagado deste aparelho e o app volta para a configuração inicial. Isso não tem volta sem um backup.', 'Apagar tudo'] }[kind];
+  const strong = kind !== 'plan';
+  sheet(`<h2>${T[0]}</h2><p class="muted">${T[1]}</p>
+    ${strong ? `<div class="card flat" style="gap:8px"><b class="small">Antes, faça um backup</b><button class="btn" onclick="exportBackup()" style="align-self:flex-start">${ico('download')}Fazer backup agora</button></div>
+    <label class="field">Para confirmar, escreva ZERAR<input class="input" id="rsWord" autocomplete="off" autocapitalize="characters" placeholder="ZERAR"></label>` : ''}
+    <p class="small" id="rsErr" style="color:var(--bad)" hidden></p>
+    <div class="row" style="justify-content:flex-end"><button class="btn" data-close>Cancelar</button><button class="btn primary" id="rsOk">${T[2]}</button></div>`, sh => {
+    sh.querySelector('#rsOk').onclick = () => {
+      if (strong && sh.querySelector('#rsWord').value.trim().toUpperCase() !== 'ZERAR') { const e = sh.querySelector('#rsErr'); e.textContent = 'Escreva ZERAR para confirmar.'; e.hidden = false; return; }
+      closeSheet();
+      if (kind === 'plan') { S.subjects.forEach(x => x.goal = null); P.onboarded = false; onbStep = 1; save(true); go('onboarding'); return; }
+      if (kind === 'records') {
+        Object.assign(S, { sessions: [], qlogs: [], exams: [], essays: [], errors: [], tasks: [] });
+        S.topics.forEach(t => { t.seen = false; t.seenDate = null; t.stage = 0; t.next = null; delete t.lastReview; });
+        S.dream.score = { lc: null, ch: null, cn: null, mt: null, rd: null };
+        P.created = today(); resetTimer(); save(true); go('hoje'); toast('Estudos zerados. Bora começar de novo!'); return;
+      }
+      const keep = { theme: P.theme, lastBackup: P.lastBackup };
+      S = freshState(); Object.assign(S.profile, keep, { letterSeen: true, onboarded: false }); onbStep = 0; save(true); go('onboarding'); toast('Tudo zerado. Vamos configurar de novo.');
+    };
+  });
 }
 function applyTheme() { const t = S.profile.theme; if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); }
 
@@ -1659,7 +1689,7 @@ function vCursinho() {
 }
 
 /* ============ Início ============ */
-const APP_VERSION = '1.4.1';
+const APP_VERSION = '1.5.0';
 let swReg = null;
 async function checkUpdate(btn) {
   if (!swReg) { toast(navigator.onLine === false ? 'Sem internet agora. Tente de novo quando estiver conectada.' : 'Abra o app pelo link enemferrai.github.io para atualizar.'); return; }
